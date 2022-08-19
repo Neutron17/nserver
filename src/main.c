@@ -8,74 +8,76 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include <sys/stat.h>
 
+#include "args.h"
 #include "log.h"
 #include "assrt.h"
 #include "msg.h"
 #include "support.h"
+#include "stdext.h"
+#include "llist.h"
+#include "signals.h"
 #include "common.h"
 
-#define THREAD_NUM 10
+#define THREAD_NUM 255
 
-void handler(int sig, siginfo_t *info, void *context);
+void *threadstart(void *arg);
 
-bool running = true;
+Node *availableFiles;
+Node *usedFiles;
 
 int main(int argc, char *argv[]) {
-	printf("pid: %d\n", getpid());
+	spid = getpid();
+	printf("pid: %d\n", spid);
+
+	union Args args = parseArgs(argc, argv);
+	handleArgs(args);
+
+
+	availableFiles = llist_create(0);
+	usedFiles = llist_create(0);
+	for(int i = 1; i < 255; i++)
+		llist_add(&availableFiles, i);
+
+	pthread_t threads[THREAD_NUM];
+	for (int i = 0; i < THREAD_NUM; i++)
+		pthread_create(&threads[i], NULL, threadstart, NULL);
 	struct sigaction sa = { 0 };
-	sa.sa_sigaction = handler;
-	sa.sa_flags = SA_SIGINFO
+	sa.sa_sigaction = sighandler;
+	sa.sa_flags =
 #ifdef SA_RESTART
-		| SA_RESTART
+		SA_RESTART |
 #endif
-		;
+		SA_SIGINFO;
 	memset(&sa.sa_mask, 0, sizeof(sa.sa_mask));
 	//sigemptyset(&sa.sa_mask);
 	if(sigaction(SIGINT, &sa, NULL) == -1) {
-		perror("sigaction");
+		LOG(L_ERR, "sigaction(SIGINT) failed");
 		return -1;
 	}
 	if(sigaction(SIGUSR1, &sa, NULL) == -1) {
-		perror("sigaction");
+		LOG(L_ERR, "sigaction(SIGUSR1) failed");
 		return -1;
 	}
-	while(running);
+	ClientMsg msg = (ClientMsg){ .fields={ VERSION_MAJOR, VERSION_MINOR, 1, M_ERR } };
+	sigqueue(spid, SIGUSR1, (union sigval) { .sival_int = msg.bits });
+	//while(running);
+	for(int i = 0; i < 255; i++) {
+		llist_pop(&availableFiles);
+		llist_pop(&usedFiles);
+	}
+	for (int i = 0; i < THREAD_NUM; i++)
+		pthread_join(threads[i], NULL);
+	//free(availableFiles);
+	//free(usedFiles);
+#ifdef MEM_DEBUG
 	memdeb_print();
+#endif
 	return 0;
 }
 
-void handler(int sig, siginfo_t *info, void *context) {
-	printf("\n%d signal received\n", sig);
-	if(sig == SIGINT) {
-		running = false;
-		return;
-	}
-	ASSERT(sig == SIGUSR1 || sig == SIGUSR2);
-	ASSERT(context != NULL);
-
-	//struct flock fl;
-	//fl.l_type   = F_WRLCK;  /* read/write lock */
-	//fl.l_whence = SEEK_SET; /* beginning of file */
-	//fl.l_start  = 0;        /* offset from l_whence */
-	//fl.l_len    = 0;        /* length, 0 = to EOF */
-	//fl.l_pid    = getpid(); /* PID */
-
-	const char *fname = "file";
-	int file = open("file", O_CREAT);
-	if(file == -1) {
-		LOGF(L_ERR, "Couldn't open file '%s'\n", fname);
-		abort();
-	}
-	close(file);
-
-	//kill(info->si_pid, SIGUSR1);
-	sigqueue(info->si_pid, SIGUSR1, (union sigval) { .sival_int = 1 });
-
-	//fcntl(fileno(file), F_SETLKW, &fl); /* set lock */
-	//sleep(2);
-
-	//fl.l_type   = F_UNLCK;
-	//fcntl(fileno(file), F_SETLK, &fl); /* unset lock */
+void *threadstart(void *arg) {
+	return NULL;
 }
 

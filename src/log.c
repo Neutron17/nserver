@@ -94,7 +94,8 @@ void appendRTimeInfo(char *dest, const char *file,
 void logtofile(const char *msg) {
 	FILE *lfile = fopen(LOGFILE_NAME, "a");
 	if(!lfile) {
-		LOG(L_ERR, "Could not open logfile");
+		fprintf(stderr, "ERROR: Couldn't open logfile\n");
+		//LOG(L_ERR, "Could not open logfile");
 		return;
 	}
 	fprintf(lfile, "%s\n", msg);

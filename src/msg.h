@@ -9,12 +9,32 @@ enum MsgType {
 	M_NONE
 };
 
+struct ClientField;
+typedef union {
+	struct ClientField {
+		// Verion
+		unsigned char vmaj	:4;
+		unsigned char vmin	:4;
+		// Filename 0-255
+		unsigned char fname	:8;
+		// Message type
+		enum MsgType type	:2;
+		// unused padding 2
+		unsigned short padd2	:10;
+	} fields;
+	unsigned int bits;
+} ClientMsg;
+
 /*
  * Instructions that the server can send a process
  * they all have an nibble for more information storage
  * WARNING: there can at most be 8 of these(3 bits)
 */
 enum ServerInstruction {
+#define SELFD_IMID	1
+#define SELFD_DUMP	2
+#define SELFD_LOGF	4
+#define SELFD_LOGS	8
 	/* order a self destruct
 	 * additional arguments:
 	 * 	1	: immediately (next options are ignored)(0 - false: clean up, 1 - true)
@@ -22,11 +42,17 @@ enum ServerInstruction {
 	 * 	100	: log to file
 	 * 	1000	: send log to server
 	*/
-	S_SELFD = 0,
+	SI_SELFD = 0,
+
 	/* server will kill the process
 	 * no additional arguments
 	*/
-	S_KILL = 1,
+	SI_KILL = 1,
+
+#define DEBUG_STDOUT	1
+#define DEBUG_LOGF	2
+#define DEBUG_LOGS	4
+#define DEBUG_UNDEF	8
 	/* print debug info
 	 * additional arguments:
 	 * 	1	: stdout,
@@ -35,41 +61,30 @@ enum ServerInstruction {
 	 * 	1000	: undefined
 	 * multiple options can be applied
 	*/
-	S_DEBUG = 2,
-
+	SI_DEBUG = 2,
 };
 
-typedef union {
-	struct {
-		// Verion
-		unsigned char vmaj	:4;
-		unsigned char vmin	:4;
-		// Message type
-		enum MsgType type	:2;
-		// unused padding 1
-		unsigned char padd1	:6;
-		// Filename 0-255
-		unsigned char fname	:8;
-		// unused padding 2
-		unsigned char padd2	:8;
-	} _fields;
-	unsigned int bits;
-} ClientMsg;
 
+
+#define STATUS_SUCCESS 1
+#define STATUS_FAILURE 0
+struct ServerField;
 typedef union {
-	struct {
+	struct ServerField {
 		// Verion
-		unsigned char vmaj		:4 ;
-		unsigned char vmin		:4 ;
+		unsigned char vmaj		:4;
+		unsigned char vmin		:4;
 		// 1: succes, 0: fail
-		unsigned char status		:1 ;
+		unsigned char status		:1;
 		// see: enum ServerInstruction
-		enum ServerInstruction instruct	:3 ;
+		enum ServerInstruction instruct	:3;
 		// see: enum ServerInstruction
-		unsigned char instructOpts	:4 ;
+		unsigned char instructOpts	:4;
+		// file name
+		unsigned char fname		:8;
 		// unused padding
-		short padd			:16;
-	} _fields;
+		unsigned char padd		:8;
+	} fields;
 	unsigned int bits;
 } ServerMsg;
 

@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "msg.h"
 
@@ -21,7 +22,11 @@ int main(int argc, char *argv[]) {
 	}
 	struct sigaction sa = {0};
 	sa.sa_sigaction = sigHandler;
-	sa.sa_flags = SA_RESTART | SA_SIGINFO;
+	sa.sa_flags =
+#ifdef SA_RESTART
+		SA_RESTART |
+#endif
+		SA_SIGINFO;
 	sigemptyset(&sa.sa_mask);
 	if(sigaction(SIGINT, &sa, NULL) == -1) {
 		perror("sigaction");
@@ -33,14 +38,15 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	struct Msg msg = { 1, 0, M_ERR, 0, 1, 0 };
-	sigqueue(atoi(argv[1]), SIGUSR1,
-			(union sigval) {
-				.sival_int = ((int)msg)
-			}
-		);
+	ClientMsg msg = { 1, 0, M_ERR, 0, 1 };
 	//kill(atoi(argv[1]), SIGUSR1);
-	while(running);
+	while(running) {
+		sigqueue(atoi(argv[1]), SIGUSR1,
+				(union sigval) {
+					.sival_int = msg.bits
+				}
+			);
+	}
 
 	return 0;
 }
@@ -50,7 +56,10 @@ void sigHandler(int sig, siginfo_t *info, void *context) {
 		running  = false;
 	if(sig != SIGUSR1)
 		return;
-	printf("pid:%d data:%d\n", info->si_pid, info->si_value.sival_int);
+	ServerMsg msg;
+	msg.bits = (unsigned)info->si_value.sival_int;
+
+	printf("pid:%d data:%d\n", info->si_pid, msg._fields.status);
 }
 
 bool islocked(const char *fname) {
