@@ -9,16 +9,19 @@ enum MsgType {
 	M_NONE
 };
 
+#define BYTE(NAME) unsigned char NAME:8
+#define BIT(NAME) unsigned char NAME:1
+// half byte (4 bits)
+#define NIBBLE(NAME) unsigned char NAME:4
+
 struct ClientField;
 typedef union {
 	struct ClientField {
 		// Verion
-		unsigned char vmaj	:4;
-		unsigned char vmin	:4;
-		// Filename 0-255
-		unsigned char fname	:8;
+		NIBBLE(vmaj);
+		NIBBLE(vmin);
 		// Message type
-		enum MsgType type	:2;
+		enum MsgType type	:4;
 		// unused padding 2
 		unsigned short padd2	:10;
 	} fields;
@@ -72,18 +75,18 @@ struct ServerField;
 typedef union {
 	struct ServerField {
 		// Verion
-		unsigned char vmaj		:4;
-		unsigned char vmin		:4;
+		NIBBLE(vmaj);
+		NIBBLE(vmin);
 		// 1: succes, 0: fail
-		unsigned char status		:1;
+		BIT(status);
 		// see: enum ServerInstruction
 		enum ServerInstruction instruct	:3;
 		// see: enum ServerInstruction
-		unsigned char instructOpts	:4;
-		// file name
-		unsigned char fname		:8;
+		NIBBLE(instructOpts);
+		// file name 0-255
+		BYTE(fname);
 		// unused padding
-		unsigned char padd		:8;
+		BYTE(padd);
 	} fields;
 	unsigned int bits;
 } ServerMsg;

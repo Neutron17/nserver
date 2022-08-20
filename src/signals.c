@@ -39,8 +39,9 @@ void sighandler(int sig, siginfo_t *info, void *context) {
 	file = fopen(fname, "w");
 	if(!file) {
 		LOGF(L_ERR, "Couldn't open file '%s'\n", fname);
-		abort();
+		exit(E_IO);
 	}
+	fprintf(file, "hi");
 	LOGF(L_INFO, "Opened file: '%s', requested by '%d'(%s)", fname, cpid, cname);
 	free(fname);
 	fclose(file);

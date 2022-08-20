@@ -4,6 +4,7 @@
 enum ExitCode {
 	E_SUCCESS = 0,
 	E_ALLOC,
+	E_IO,
 	E_ARG,
 	E_UNKNOWN,
 };

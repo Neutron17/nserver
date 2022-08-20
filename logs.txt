@@ -1,0 +1,8 @@
+INFO: Signal '10', received from 17428(./build/nserv)
+	 in file: 'src/signals.c', in function: sighandler, at line: 14, errno: No such file or directory
+INFO: Opened file: 'files/1', requested by '17428'(./build/nserv)
+	 in file: 'src/signals.c', in function: sighandler, at line: 44, errno: No such file or directory
+INFO: Signal '10', received from 18020(./build/nserv)
+	 in file: 'src/signals.c', in function: sighandler, at line: 14, errno: No such file or directory
+INFO: Opened file: 'files/1', requested by '18020'(./build/nserv)
+	 in file: 'src/signals.c', in function: sighandler, at line: 44, errno: No such file or directory
