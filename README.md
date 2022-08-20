@@ -2,6 +2,10 @@
 
 unix signal server for my applications
 
+# WARNING: 
+This project is only experimental now, the server is half done, 
+and the client side implementation has not even started
+
 ## Requirements
 
  - C99: stdbool, // comments, inline initializers(={...}), variadoc macros
