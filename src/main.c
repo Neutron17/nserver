@@ -60,7 +60,11 @@ int main(int argc, char *argv[]) {
 		LOG(L_ERR, "sigaction(SIGUSR1) failed");
 		return -1;
 	}
-	ClientMsg msg = (ClientMsg){ .fields={ VERSION_MAJOR, VERSION_MINOR, 1, M_ERR } };
+	ClientMsg msg = (ClientMsg){ .fields={
+		2,
+		.vmaj=VERSION_MAJOR, VERSION_MINOR,
+		M_OPEN, 0
+	} };
 	sigqueue(spid, SIGUSR1, (union sigval) { .sival_int = msg.bits });
 	//while(running);
 	for(int i = 0; i < 255; i++) {

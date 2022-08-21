@@ -1,4 +1,5 @@
 # TODOs
 
- - Implement client side
+ - rewrite to unix socket
  - Args
+ - Implement client side

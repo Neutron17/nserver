@@ -34,8 +34,9 @@ void sighandler(int sig, siginfo_t *info, void *context) {
 	FILE *file = NULL;
 	const size_t fname_len = 6 + 3;
 	char *fname = malloc(fname_len);
-	strcpy(fname, "files/");
-	itoa(clientM.fields.fname, fname + 6, 10);
+	strcpy(fname, "files/1");
+	// TODO
+	//itoa(clientM.fields.fname, fname + 6, 10);
 	file = fopen(fname, "w");
 	if(!file) {
 		LOGF(L_ERR, "Couldn't open file '%s'\n", fname);
