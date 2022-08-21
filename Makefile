@@ -31,7 +31,7 @@ build: $(OBJ)
 	$(CC) $(CCFLAGS) -ggdb -o $(BIN)/$(PNAME) $(filter %.o,$^) $(LDFLAGS)
 
 clean:
-	rm $(BIN)/* $(OBJ)
+	rm $(BIN)/* $(OBJ) logs.txt
 
 install: build
 	cp $(BIN)/$(PNAME) $(INSTALL_PATH)
