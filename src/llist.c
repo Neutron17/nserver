@@ -1,9 +1,7 @@
 #include "llist.h"
 #include <stdlib.h>
 #include "log.h"
-#include "common.h"
-//#define MEM_DEBUG 1
-//#include <ntr/debug.h>
+#include "global.h"
 
 Node *llist_create(int val) {
 	Node *ret = malloc(sizeof(Node));

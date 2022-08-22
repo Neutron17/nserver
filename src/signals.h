@@ -3,7 +3,11 @@
 
 #include <signal.h>
 #include <sys/types.h>
+#include <pthread.h>
 #include "msg.h"
+
+extern pthread_mutex_t sigmutex;
+extern pthread_mutex_t sigthmut;
 
 // main signal handler
 void sighandler(int sig, siginfo_t *info, void *context);

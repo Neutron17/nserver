@@ -15,6 +15,7 @@ CCFLAGS += -std=c99
 CCFLAGS += -Wall
 CCFLAGS += -pedantic
 CCFLAGS += -D_POSIX_C_SOURCE=199309L
+CCFLAGS += -ggdb
 
 LDFLAGS  = $(INCFLAGS)
 LDFLAGS += -lpthread
@@ -28,7 +29,7 @@ run: build
 	$(BIN)/$(PNAME) $*
 
 build: $(OBJ)
-	$(CC) $(CCFLAGS) -ggdb -o $(BIN)/$(PNAME) $(filter %.o,$^) $(LDFLAGS)
+	$(CC) $(CCFLAGS) -o $(BIN)/$(PNAME) $(filter %.o,$^) $(LDFLAGS)
 
 clean:
 	rm $(BIN)/* $(OBJ) logs.txt

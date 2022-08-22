@@ -3,9 +3,11 @@
 #include <stdarg.h>
 
 enum LogLevel {
-	L_INFO = 0,
+	L_ALL = 0,
+	L_INFO,
 	L_WARN,
-	L_ERR
+	L_ERR,
+	L_NONE
 };
 
 #define LOGFILE_NAME "logs.txt"
@@ -28,6 +30,9 @@ void __log(enum LogLevel level, const char *file,
 		const char *func,
 #endif
 		int line, const char *msg);
+
+void loginit	(enum LogLevel stdoutMask, enum LogLevel fileMask);
+void logdestroy	();
 
 #endif //_NTR_S_LOG
 

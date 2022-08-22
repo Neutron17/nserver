@@ -1,25 +1,50 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <errno.h>
 #include <string.h>
 #include <stdarg.h>
+#include <pthread.h>
+#include <fcntl.h>
 
 #include "log.h"
 #include "assrt.h"
-#include "common.h"
+#include "global.h"
 #include "stdext.h"
 
-const char *logprefix[3] = {
+static const char *logprefix[3] = {
 	"INFO: ", "WARINING: ", "ERROR: "
 };
 
-void logtofile(const char *msg);
+pthread_mutex_t logmutex;
+
+static void logtofile(const char *msg);
 // appends runtime info to dest
-void appendRTimeInfo(char *dest, const char *file,
+static void appendRTimeInfo(char *dest, const char *file,
 #ifndef NO_FUNC
 		const char *func,
 #endif
 		int line);
+
+static enum LogLevel stdoutMask, fileMask;
+static int logfile;
+
+void loginit(enum LogLevel _stdoutMask, enum LogLevel _fileMask) {
+	stdoutMask = _stdoutMask;
+	fileMask = _fileMask;
+	logfile = open(LOGFILE_NAME, O_WRONLY|O_APPEND|O_CREAT);
+	if(logfile == -1) {
+		fprintf(stderr, "ERROR: Couldn't open logfile, %s, %s\n", LOGFILE_NAME, strerror(errno));
+	}
+}
+
+void logdestroy() {
+	if(logfile != -1) {
+		pthread_mutex_lock(&logmutex);
+		close(logfile);
+		pthread_mutex_unlock(&logmutex);
+	}
+}
 
 void __logf(enum LogLevel level, const char *file,
 #ifndef NO_FUNC
@@ -29,7 +54,7 @@ void __logf(enum LogLevel level, const char *file,
 	va_list ap;
 	va_start(ap, format);
 
-	char message[512];
+	char message[512] = "";
 	strncpy(message, logprefix[level], 9);
 	{
 		char tmp[256];
@@ -43,8 +68,11 @@ void __logf(enum LogLevel level, const char *file,
 #endif
 			line);
 
-	printf("%s\n", message);
-	logtofile(message);
+	printf("level: %d, smask: %d, fmask: %d\n", level, stdoutMask, fileMask);
+	if(stdoutMask != L_NONE && level >= stdoutMask)
+		printf("%s\n", message);
+	if(fileMask != L_NONE && level >= fileMask)
+		logtofile(message);
 }
 
 void __log(enum LogLevel level, const char *file,
@@ -64,12 +92,14 @@ void __log(enum LogLevel level, const char *file,
 			line);
 
 	// outputing
-	printf("%s\n", message);
-	logtofile(message);
-
+	printf("level: %d, smask: %d, fmask: %d\n", level, stdoutMask, fileMask);
+	if(stdoutMask != L_NONE && level >= stdoutMask)
+		printf("%s\n", message);
+	if(fileMask != L_NONE && level >= fileMask)
+		logtofile(message);
 }
 
-void appendRTimeInfo(char *dest, const char *file,
+static void appendRTimeInfo(char *dest, const char *file,
 #ifndef NO_FUNC
 		const char *func,
 #endif
@@ -83,7 +113,7 @@ void appendRTimeInfo(char *dest, const char *file,
 			"in function: %s, "
 #endif
 
-			"at line: %d, errno: %s",
+			"at line: %d, errno: %s\n",
 			file,
 #ifndef NO_FUNC
 			func,
@@ -91,13 +121,12 @@ void appendRTimeInfo(char *dest, const char *file,
 			line, strerror(errno));
 }
 
-void logtofile(const char *msg) {
-	FILE *lfile = fopen(LOGFILE_NAME, "a");
-	if(!lfile) {
-		fprintf(stderr, "ERROR: Couldn't open logfile\n");
-		//LOG(L_ERR, "Could not open logfile");
+static void logtofile(const char *msg) {
+	if(logfile == -1)
 		return;
-	}
-	fprintf(lfile, "%s\n", msg);
+	pthread_mutex_lock(&logmutex);
+	// Error already printed in loginit
+	async_write_str(logfile, (char *)msg, 512);
+	pthread_mutex_unlock(&logmutex);
 }
 

@@ -9,7 +9,7 @@
 #include "assrt.h"
 #include "exitCodes.h"
 #include "log.h"
-#include "common.h"
+#include "global.h"
 
 union Args parseArgs(int argc, char *argv[]) {
 	Args ret = {

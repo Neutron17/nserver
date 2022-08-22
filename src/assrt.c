@@ -5,7 +5,7 @@
 #include <errno.h>
 
 #include "log.h"
-#include "common.h"
+#include "global.h"
 
 void __assert_m(bool expr, const char *restrict msg, const char *restrict file,
 #ifndef NO_FUNC

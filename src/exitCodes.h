@@ -7,6 +7,12 @@ enum ExitCode {
 	E_IO,
 	E_ARG,
 	E_UNKNOWN,
+
+	E_INIT,
+	E_SOCK_BIND,
+	E_SOCK_CONN,
+	E_SOCK_ACPT,
+	E_SOCK_CLOSE,
 };
 
 #endif /* ifndef _NTR_EXCODE_H_ */

@@ -38,9 +38,10 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	ClientMsg msg = { 1, 0, M_ERR, 0, 1 };
+	ClientMsg msg = { .fields={ 1, 1,0,M_LOG,LOG_ERR } };
 	//kill(atoi(argv[1]), SIGUSR1);
-	while(running) {
+	for(int i = 0; i < 1000 && running; i++) {
+	//while(running) {
 		sigqueue(atoi(argv[1]), SIGUSR1,
 				(union sigval) {
 					.sival_int = msg.bits
@@ -59,7 +60,7 @@ void sigHandler(int sig, siginfo_t *info, void *context) {
 	ServerMsg msg;
 	msg.bits = (unsigned)info->si_value.sival_int;
 
-	printf("pid:%d data:%d\n", info->si_pid, msg._fields.status);
+	printf("pid:%d data:%d\n", info->si_pid, msg.fields.status);
 }
 
 bool islocked(const char *fname) {
