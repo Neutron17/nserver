@@ -2,8 +2,8 @@
 
 unix signal server for my applications
 
-# WARNING: 
-This project is only experimental now, the server is half done, 
+# WARNING:
+This project is only experimental now, the server is half done,
 and the client side implementation has not even started
 
 ## Requirements
@@ -23,4 +23,6 @@ on the side (for more details see: msg.h)
 union ServerMsg
 ```
 (msg.h)
+
+communication continues through a UNIX domain socket
 
